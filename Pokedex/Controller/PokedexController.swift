@@ -73,6 +73,9 @@ extension PokedexController {
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! PokedexCell
         cell.backgroundColor = .blue
+        
+        // The nth cell will contain the nth pokemon in the pokemon array (cell.pokemon = pokemon[0/1/2/3/...]
+        cell.pokemon = pokemon[indexPath.row]
         return cell
     }
 }

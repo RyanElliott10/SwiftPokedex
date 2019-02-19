@@ -14,7 +14,8 @@ class PokedexCell: UICollectionViewCell {
     
     var pokemon: Pokemon? {
         didSet {
-            
+            nameLabel.text = pokemon?.name
+            imageView.image = pokemon?.image
         }
     }
     

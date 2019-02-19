@@ -12,7 +12,7 @@ class Pokemon {
     
     // Optional since we're fetching data from an API and we're not guaranteed anything
     var name: String?
-    var imageURL: String?
+    var imageUrl: String?
     var image: UIImage?
     var id: Int?
     var weight: Int?
@@ -28,7 +28,7 @@ class Pokemon {
         
         // Checks if it's in the dictionary. If not, asigns nil
         self.name = dictionary["name"] as? String
-        self.imageURL = dictionary["imageURL"] as? String
+        self.imageUrl = dictionary["imageUrl"] as? String
         self.weight = dictionary["weight"] as? Int
         self.height = dictionary["height"] as? Int
         self.defense = dictionary["defense"] as? Int

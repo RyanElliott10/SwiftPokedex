@@ -27,7 +27,7 @@ class Pokemon {
         self.id = id
         
         // Checks if it's in the dictionary. If not, asigns nil
-        self.name = dictionary["name"]?.capitalized
+        self.name = dictionary["name"] as? String
         self.imageUrl = dictionary["imageUrl"] as? String
         self.weight = dictionary["weight"] as? Int
         self.height = dictionary["height"] as? Int

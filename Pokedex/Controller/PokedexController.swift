@@ -15,6 +15,9 @@ class PokedexController: UICollectionViewController {
     // MARK: - Properties
     
     var pokemon = [Pokemon]()
+    var filteredPokemon = [Pokemon]()
+    var inSearchMode = false
+    var searchBar: UISearchBar!
     
     let infoView: InfoView = {
         let view = InfoView()
@@ -53,7 +56,7 @@ class PokedexController: UICollectionViewController {
     // MARK: - Selectors
     
     @objc func showSearchBar() {
-        print(123)
+        configureSearchBar()
     }
     
     @objc func handleDismissal() {
@@ -71,8 +74,7 @@ class PokedexController: UICollectionViewController {
         
         navigationItem.title = "Pokedex"
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(showSearchBar))
-        navigationItem.rightBarButtonItem?.tintColor = .white
+        configureSearchBarButton()
         
         // Register the CollectionViewCell we made, PokedexCell
         collectionView.register(PokedexCell.self, forCellWithReuseIdentifier: reuseIdentifier)
@@ -80,6 +82,23 @@ class PokedexController: UICollectionViewController {
         // Add a gesture recognizer to the blurred background to dimiss the modal
         let gesture = UITapGestureRecognizer(target: self, action: #selector(handleDismissal))
         visualEffectView.addGestureRecognizer(gesture)
+    }
+    
+    func configureSearchBarButton() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(showSearchBar))
+        navigationItem.rightBarButtonItem?.tintColor = .white
+    }
+    
+    func configureSearchBar() {
+        searchBar = UISearchBar()
+        searchBar.delegate = self
+        searchBar.sizeToFit()
+        searchBar.showsCancelButton = true
+        searchBar.becomeFirstResponder()
+        searchBar.tintColor = .white
+        
+        navigationItem.rightBarButtonItem = nil
+        navigationItem.titleView = searchBar
     }
     
     func dismissInfoView(pokemon: Pokemon?) {
@@ -97,17 +116,22 @@ extension PokedexController {
     
     // Creating the cells for the main controller. Determines the amount to render
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return pokemon.count
+        return inSearchMode ? filteredPokemon.count : pokemon.count
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! PokedexCell
-        cell.backgroundColor = .blue
-        cell.delegate = self
         
-        // The nth cell will contain the nth pokemon in the pokemon array (cell.pokemon = pokemon[0/1/2/3/...]
-        cell.pokemon = pokemon[indexPath.row]
+        cell.pokemon = inSearchMode ? filteredPokemon[indexPath.row] : pokemon[indexPath.row]
+        
+        cell.delegate = self
         return cell
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let controller = PokemonInfoController()
+        controller.pokemon = inSearchMode ? filteredPokemon[indexPath.row] : pokemon[indexPath.row]
+        navigationController?.pushViewController(controller, animated: true)
     }
 }
 
@@ -119,7 +143,6 @@ extension PokedexController: UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        
         // Let each cell be a square with the following width (and height, since it's a square)
         let width = (view.frame.width - 36) / 3
         return CGSize(width: width, height: width)
@@ -156,5 +179,28 @@ extension PokedexController: InfoViewDelegate {
     
     func dismissInfoView(withPokemon pokemon: Pokemon?) {
         dismissInfoView(pokemon: pokemon)
+    }
+}
+
+extension PokedexController: UISearchBarDelegate {
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        navigationItem.titleView = nil
+        configureSearchBarButton()
+        inSearchMode = false
+        collectionView.reloadData()
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if (searchText == "" || searchBar.text == nil) {
+            inSearchMode = false
+            collectionView.reloadData()
+            view.endEditing(true)
+        } else {
+            inSearchMode = true
+            filteredPokemon = pokemon.filter({$0.name?.range(of: searchText.lowercased()) != nil})
+            collectionView.reloadData()
+            
+        }
     }
 }
